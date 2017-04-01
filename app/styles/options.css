@@ -1,0 +1,11 @@
+.options-title {
+  margin-bottom: 0;
+}
+
+textarea.blocked-sites.form-control {
+  height: 10em;
+}
+
+.save-btn {
+  margin-top: 1.5em;
+}
