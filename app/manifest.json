@@ -17,7 +17,8 @@
     },
     "permissions": [
         "webNavigation",
-        "notifications"
+        "notifications",
+        "storage"
     ],
     "options_ui": {
         "page": "options.html",

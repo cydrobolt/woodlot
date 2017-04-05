@@ -1,23 +1,25 @@
 'use strict'
 /* global chrome, moment */
 
-let activeTree = {
-    // timer: null,
-    // createdTime: null,
-    // grownTime: null
-}
+let activeTree = {} // timer: null,
+                    // createdTime: null,
+                    // grownTime: null
 
 let woodlotTrees = {}
 let updateExtLabelTimer = null
 let minutesLeft = null
 
-function clearExtLabel() {
+let blacklistedUrls = [
+    { hostSuffix: 'polr.me' }
+]
+
+let clearExtLabel = () => {
     chrome.browserAction.setBadgeText({
         text: ''
     })
 }
 
-function setExtLabel() {
+let setExtLabel = () => {
     minutesLeft = activeTree.grownTime.diff(moment(), 'minutes').toString()
     chrome.browserAction.setBadgeText({
         text: minutesLeft
@@ -32,7 +34,7 @@ function setExtLabel() {
     })
 }
 
-function watchExtLabel() {
+let watchExtLabel = () => {
     if (updateExtLabelTimer) {
         clearInterval(updateExtLabelTimer)
     }
@@ -43,48 +45,81 @@ function watchExtLabel() {
     }, 60000)
 }
 
+let treeGone = () => {
+    clearInterval(updateExtLabelTimer)
+    clearExtLabel()
+    activeTree = {}
+}
+
 chrome.runtime.onInstalled.addListener(details => {
     console.log('previousVersion', details.previousVersion)
 })
 
-chrome.runtime.onMessage.addListener(
-    function(request, sender, sendResponse) {
-        let action = request.action
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    let action = request.action
 
-        if (action == 'plantTree') {
-            let treeMins = request.tree.minutes
+    if (action == 'plantTree') {
+        let treeMins = request.tree.minutes
 
-            activeTree.createdTime = moment()
-            activeTree.grownTime = moment().add(treeMins, 'minutes')
+        activeTree.createdTime = moment()
+        activeTree.grownTime = moment().add(treeMins, 'minutes')
 
-            watchExtLabel()
+        watchExtLabel()
 
-            activeTree.timer = setTimeout(() => {
-                console.log('Active tree timer elapsed.')
-                chrome.runtime.sendMessage({
-                    action: 'treeGrown',
-                    elapsedTime: activeTree.grownTime.diff(activeTree.createdTime, 'minutes')
-                }, function(response) {
-                    console.log('tree grown: ack')
-                })
-
-                clearInterval(updateExtLabelTimer)
-                clearExtLabel()
-                activeTree = {}
-            }, treeMins * 60 * 1000)
-
-            console.log('sending response')
-            sendResponse({
-                ack: true
+        activeTree.timer = setTimeout(() => {
+            console.log('Active tree timer elapsed.')
+            chrome.runtime.sendMessage({
+                action: 'treeGrown',
+                elapsedTime: activeTree.grownTime.diff(activeTree.createdTime, 'minutes')
+            }, function(response) {
+                console.log('tree grown: ack')
             })
-        } else if (action == 'getTreeInfo') {
-            // Return details on current tree
-            sendResponse({
-                ack: true,
-                timeLeft: minutesLeft,
-                activeTree: activeTree
-            })
-        }
 
-        console.log(sender, request)
-    })
+            treeGone()
+        }, treeMins * 60 * 1000)
+
+        console.log('sending response')
+        sendResponse({
+            ack: true
+        })
+    }
+    else if (action == 'getTreeInfo') {
+        // Return details on current tree
+        sendResponse({
+            ack: true,
+            timeLeft: minutesLeft,
+            activeTree: activeTree
+        })
+    }
+    else if (action == 'giveUpTree') {
+        treeGone()
+        chrome.notifications.create({
+            iconUrl: 'images/icon-128.png',
+            type: 'basic',
+            title: 'Your tree has withered!',
+            message: 'You gave up on your tree. Without water, it died.'
+        })
+    }
+
+    console.log(sender, request)
+})
+
+chrome.webNavigation.onCompleted.addListener((tabId, url, processId, frameId, timeStamp) => {
+    if (activeTree.grownTime) {
+        console.log('killing tree')
+        // kill the tree!
+        treeGone()
+        chrome.notifications.create({
+            iconUrl: 'images/icon-128.png',
+            type: 'basic',
+            title: 'Your tree has withered!',
+            message: 'You accessed a blacklisted site and your tree has died.'
+        })
+
+        chrome.runtime.sendMessage({
+            action: 'treeWithered'
+        }, function(response) {
+            console.log('tree withered: ack')
+        })
+    }
+}, {url: blacklistedUrls})

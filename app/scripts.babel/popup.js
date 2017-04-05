@@ -9,7 +9,41 @@ woodlot.controller('PopupCtrl', ['$scope', ($scope) => {
         timeLeft: null
     }
 
-    $scope.init = function() {
+    $scope.treeGone = () => {
+        $scope.state.timeLeft = null
+        $scope.state.treeActive = false
+
+        $scope.$digest()
+    }
+
+    $scope.plantTree = () => {
+        chrome.runtime.sendMessage({
+            action: 'plantTree',
+            tree: {
+                minutes: $('.plant-time').val()
+            }
+        }, function(response) {
+            console.log('received response for plantTree')
+            console.log(response)
+        })
+
+        $scope.state.treeActive = true
+        $scope.$digest()
+    }
+
+    $scope.giveUpTree = () => {
+        // kills tree
+        chrome.runtime.sendMessage({
+            action: 'giveUpTree'
+        })
+        $scope.treeGone()
+    }
+
+    $scope.viewWoodlot = () => {
+
+    }
+
+    $scope.init = () => {
         console.log('Loaded PopupCtrl')
 
         // get tree status
@@ -40,10 +74,7 @@ woodlot.controller('PopupCtrl', ['$scope', ($scope) => {
                         message: 'Your tree has successfully grown. You were focused for ' + focusedTime + ' minutes!'
                     })
 
-                    $scope.state.timeLeft = null
-                    $scope.state.treeActive = false
-
-                    $scope.$digest()
+                    $scope.treeGone()
                 }
 
                 else if (request.action == 'treeUpdate') {
@@ -51,28 +82,13 @@ woodlot.controller('PopupCtrl', ['$scope', ($scope) => {
                     $scope.$digest()
                 }
 
+                else if (request.action == 'treeWithered') {
+                    $scope.treeGone()
+                }
+
                 console.log(sender, request)
             }
         )
-    }
-
-    $scope.plantTree = function() {
-        chrome.runtime.sendMessage({
-            action: 'plantTree',
-            tree: {
-                minutes: $('.plant-time').val()
-            }
-        }, function(response) {
-            console.log('received response for plantTree')
-            console.log(response)
-        })
-
-        $scope.state.treeActive = true
-        $scope.$digest()
-    }
-
-    $scope.viewWoodlot = function() {
-
     }
 
     $scope.init()
