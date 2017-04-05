@@ -1,7 +1,35 @@
 html, body {
-  width: 30em;
+    width: 30em;
 }
 
 .plant-btn {
-  margin-right: 0.3em;
+    margin-right: 0.3em;
+}
+
+input.plant-time {
+    line-height: 3em;
+    height: 1.5em;
+    padding: 0.2em;
+    font-size: 3em;
+    width: 1.5em;
+    margin-top: 0.3em;
+    margin-bottom: 0.3em;
+    display: inline;
+}
+
+.no-active-tree span {
+    font-size: 2em;
+    margin-left: 0.7em;
+}
+
+.title {
+    font-size: 48px;
+}
+
+.time-left {
+    font-size: 5em;
+}
+
+.active-tree {
+    width: 13em;
 }

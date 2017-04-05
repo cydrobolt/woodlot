@@ -1,9 +1,11 @@
 <!doctype html>
-<html>
-  <head>
+<html ng-app="woodlot">
+
+<head>
     <meta charset="utf-8">
     <!-- build:css styles/popup-vendor.css -->
     <!-- bower:css -->
+    <link rel="stylesheet" href="bower_components/bootstrap-css/css/bootstrap.min.css" />
     <!-- endbower -->
     <!-- endbuild -->
 
@@ -14,25 +16,44 @@
     <!-- build:css styles/popup.css -->
     <link href="styles/popup.css" rel="stylesheet">
     <!-- endbuild -->
+</head>
 
-    <!-- build:css styles/bootstrap.min.css -->
-    <link href="styles/bootstrap.min.css" rel="stylesheet">
-    <!-- endbuild -->
-  </head>
-  <body>
-    <h1>woodlot</h1>
-    <p>grow and nurture your forest to stay focused</p>
+<body>
+    <div class="container" ng-controller="PopupCtrl">
+        <h1 class="title">woodlot</h1>
+        <p>grow and nurture your forest to stay focused</p>
 
-    <a class="btn btn-success plant-btn">plant</a>
-    <a class="btn btn-info">woodlot</a>
+        <div class="no-active-tree" ng-if="!state.treeActive">
+            <input class="plant-time form-control" value="35">
+            <span>minutes</span>
+        </div>
+
+        <div class="active-tree well" ng-if="state.treeActive">
+            <span class="time-left" ng-bind="state.timeLeft">55</span>
+            <span>minutes</span>
+        </div>
+
+        <div class="action-btns" ng-if="!state.treeActive">
+            <a class="btn btn-success plant-btn" ng-click="plantTree()">plant</a>
+            <a class="btn btn-info">woodlot</a>
+        </div>
+
+        <a class="btn btn-danger" ng-if="state.treeActive" ng-click="giveUp()">give up</a>
+    </div>
 
     <!-- build:js scripts/popup-vendor.js -->
     <!-- bower:js -->
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="bower_components/bootstrap-css/js/bootstrap.min.js"></script>
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/moment/moment.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
 
     <!-- build:js scripts/popup.js -->
     <script src="scripts/popup.js"></script>
     <!-- endbuild -->
-  </body>
+</body>
+
 </html>

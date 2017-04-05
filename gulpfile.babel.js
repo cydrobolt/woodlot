@@ -1,4 +1,3 @@
-// generated on 2017-04-01 using generator-chrome-extension 0.6.1
 import gulp from 'gulp';
 import gulpLoadPlugins from 'gulp-load-plugins';
 import del from 'del';

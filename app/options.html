@@ -3,6 +3,7 @@
   <head>
     <!-- build:css styles/options-vendor.css -->
     <!-- bower:css -->
+    <link rel="stylesheet" href="bower_components/bootstrap-css/css/bootstrap.min.css" />
     <!-- endbower -->
     <!-- endbuild -->
 
@@ -13,22 +14,26 @@
     <!-- build:css styles/options.css -->
     <link href="styles/options.css" rel="stylesheet">
     <!-- endbuild -->
-
-    <!-- build:css styles/bootstrap.min.css -->
-    <link href="styles/bootstrap.min.css" rel="stylesheet">
-    <!-- endbuild -->
   </head>
   <body>
-    <h1 class="options-title">woodlot</h1>
-    <p class="text-muted">settings</p>
+    <div class="container">
+      <h1 class="options-title">woodlot</h1>
+      <p class="text-muted">settings</p>
 
-    <h4>blocked sites</h4>
-    <textarea class="blocked-sites form-control"
-      placeholder="a list of blocked domains, one per line"></textarea>
+      <h4>blocked sites</h4>
+      <textarea class="blocked-sites form-control"
+        placeholder="a list of blocked domains, one per line"></textarea>
 
-    <a class="btn btn-success save-btn">save</a>
+      <a class="btn btn-success save-btn">save</a>
+    </div>
+
     <!-- build:js scripts/options-vendor.js -->
     <!-- bower:js -->
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="bower_components/bootstrap-css/js/bootstrap.min.js"></script>
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/moment/moment.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
 
