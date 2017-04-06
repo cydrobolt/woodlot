@@ -9,9 +9,7 @@ let woodlotTrees = {}
 let updateExtLabelTimer = null
 let minutesLeft = null
 
-let blacklistedUrls = [
-    { hostSuffix: 'polr.me' }
-]
+let blacklistedUrls = null
 
 let clearExtLabel = () => {
     chrome.browserAction.setBadgeText({
@@ -51,6 +49,49 @@ let treeGone = () => {
     activeTree = {}
 }
 
+let handleBlacklistedSiteNav = (tabId, url, processId, frameId, timeStamp) => {
+    if (activeTree.grownTime) {
+        console.log('killing tree')
+        // kill the tree!
+        treeGone()
+        chrome.notifications.create({
+            iconUrl: 'images/icon-128.png',
+            type: 'basic',
+            title: 'Your tree has withered!',
+            message: 'You accessed a blacklisted site and your tree has died.'
+        })
+
+        chrome.runtime.sendMessage({
+            action: 'treeWithered'
+        }, function(response) {
+            console.log('tree withered: ack')
+        })
+    }
+}
+
+let reloadBlacklist = () => {
+    chrome.storage.sync.get(['blockedSites'], function(items) {
+        if (items.blockedSites) {
+            blacklistedUrls = items.blockedSites.map((n) => {
+                return { hostSuffix: n }
+            })
+            console.log(blacklistedUrls)
+        }
+        else {
+            blacklistedUrls = [
+                { hostSuffix: 'polr.me' }
+            ]
+        }
+
+        if (chrome.webNavigation.onCompleted.hasListener(handleBlacklistedSiteNav)) {
+            console.log('removing old listener')
+            chrome.webNavigation.onCompleted.removeListener(handleBlacklistedSiteNav)
+        }
+        // register webNavigation listeners
+        chrome.webNavigation.onCompleted.addListener(handleBlacklistedSiteNav, {url: blacklistedUrls})
+    })
+}
+
 chrome.runtime.onInstalled.addListener(details => {
     console.log('previousVersion', details.previousVersion)
 })
@@ -83,14 +124,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             ack: true
         })
     }
-    else if (action == 'getTreeInfo') {
-        // Return details on current tree
-        sendResponse({
-            ack: true,
-            timeLeft: minutesLeft,
-            activeTree: activeTree
-        })
-    }
     else if (action == 'giveUpTree') {
         treeGone()
         chrome.notifications.create({
@@ -100,26 +133,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             message: 'You gave up on your tree. Without water, it died.'
         })
     }
+    else if (action == 'getTreeInfo') {
+        // Return details on current tree
+        sendResponse({
+            ack: true,
+            timeLeft: minutesLeft,
+            activeTree: activeTree
+        })
+    }
+    else if (action == 'reloadBlacklist') {
+        // Load blacklist from storage
+        reloadBlacklist()
+    }
+
 
     console.log(sender, request)
 })
 
-chrome.webNavigation.onCompleted.addListener((tabId, url, processId, frameId, timeStamp) => {
-    if (activeTree.grownTime) {
-        console.log('killing tree')
-        // kill the tree!
-        treeGone()
-        chrome.notifications.create({
-            iconUrl: 'images/icon-128.png',
-            type: 'basic',
-            title: 'Your tree has withered!',
-            message: 'You accessed a blacklisted site and your tree has died.'
-        })
 
-        chrome.runtime.sendMessage({
-            action: 'treeWithered'
-        }, function(response) {
-            console.log('tree withered: ack')
-        })
-    }
-}, {url: blacklistedUrls})
+reloadBlacklist()
