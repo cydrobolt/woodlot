@@ -20,25 +20,63 @@
 
 <body>
     <div class="container" ng-controller="PopupCtrl">
-        <h1 class="title">woodlot</h1>
-        <p>grow and nurture your forest to stay focused</p>
+        <div class="main-view" ng-if="!state.showWoodlot">
+            <h1 class="title">woodlot</h1>
+            <p>grow and nurture your forest to stay focused</p>
 
-        <div class="no-active-tree" ng-if="!state.treeActive">
-            <input class="plant-time form-control" value="35">
-            <span>minutes</span>
+            <div class="no-active-tree" ng-if="!state.treeActive">
+                <input class="plant-time form-control" value="35">
+                <span>minutes</span>
+            </div>
+
+            <div class="active-tree well" ng-if="state.treeActive">
+                <span class="time-left" ng-bind="state.timeLeft">55</span>
+                <span>minutes</span>
+            </div>
+
+            <div class="action-btns" ng-if="!state.treeActive">
+                <a class="btn btn-success plant-btn" ng-click="plantTree()">plant</a>
+                <a class="btn btn-info" ng-click="state.showWoodlot = true">woodlot</a>
+            </div>
+
+            <a class="btn btn-danger" ng-if="state.treeActive" ng-click="giveUpTree()">give up</a>
         </div>
 
-        <div class="active-tree well" ng-if="state.treeActive">
-            <span class="time-left" ng-bind="state.timeLeft">55</span>
-            <span>minutes</span>
-        </div>
+        <div class="woodlot-view" ng-if="state.showWoodlot">
+            <div class="row text-muted" ng-if="!trees">
+                <h1>no trees :(</h1>
+            </div>
 
-        <div class="action-btns" ng-if="!state.treeActive">
-            <a class="btn btn-success plant-btn" ng-click="plantTree()">plant</a>
-            <a class="btn btn-info">woodlot</a>
-        </div>
+            <div ng-repeat="(date, dayTrees) in trees" ng-if="trees">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Trees</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ date }}</td>
+                            <td>
+                                <div ng-repeat="tree in dayTrees">
+                                    <span>
+                                        <p>
+                                            <i class="fa fa-tree tree-1"></i>
+                                        </p>
+                                        <span>{{ tree.timeFocused }} minutes</span>
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-        <a class="btn btn-danger" ng-if="state.treeActive" ng-click="giveUpTree()">give up</a>
+            <div class="row">
+                <a class="btn btn-warning" ng-click="state.showWoodlot = false">back</a>
+            </div>
+        </div>
     </div>
 
     <!-- build:js scripts/popup-vendor.js -->

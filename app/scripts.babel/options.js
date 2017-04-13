@@ -2,7 +2,7 @@
 /* global chrome */
 
 $(() => {
-    chrome.storage.sync.get(['blockedSites'], function(items) {
+    chrome.storage.sync.get(['blockedSites'], (items) => {
         if (items.blockedSites) {
             let blockedSitesRaw = items.blockedSites.join('\n')
             $('.blocked-sites').val(blockedSitesRaw)

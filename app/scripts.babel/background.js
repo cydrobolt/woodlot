@@ -5,11 +5,11 @@ let activeTree = {} // timer: null,
                     // createdTime: null,
                     // grownTime: null
 
-let woodlotTrees = {}
 let updateExtLabelTimer = null
 let minutesLeft = null
 
 let blacklistedUrls = null
+let trees = false
 
 let clearExtLabel = () => {
     chrome.browserAction.setBadgeText({
@@ -27,7 +27,7 @@ let setExtLabel = () => {
     chrome.runtime.sendMessage({
         action: 'treeUpdate',
         timeLeft: minutesLeft
-    }, function(response) {
+    }, (response) => {
         console.log('tree update: ack')
     })
 }
@@ -49,6 +49,29 @@ let treeGone = () => {
     activeTree = {}
 }
 
+let syncTrees = () => {
+    if (!trees) {
+        // if $scope.trees hasn't been initialized,
+        // download data from Chrome storage
+        chrome.storage.sync.get(['trees'], (items) => {
+            console.log(items)
+            trees = items.trees
+            if (!items.trees) {
+                trees = {}
+            }
+        })
+        console.log('trees downloaded from storage')
+    }
+    else {
+        // if $scope.trees has already been initialized,
+        // sync local updates to Chrome storage
+        chrome.storage.sync.set({ 'trees': trees }, () => {})
+        console.log('trees uploaded to storage')
+    }
+
+    console.log(trees)
+}
+
 let handleBlacklistedSiteNav = (tabId, url, processId, frameId, timeStamp) => {
     if (activeTree.grownTime) {
         console.log('killing tree')
@@ -63,14 +86,16 @@ let handleBlacklistedSiteNav = (tabId, url, processId, frameId, timeStamp) => {
 
         chrome.runtime.sendMessage({
             action: 'treeWithered'
-        }, function(response) {
+        }, (response) => {
             console.log('tree withered: ack')
         })
     }
 }
 
 let reloadBlacklist = () => {
-    chrome.storage.sync.get(['blockedSites'], function(items) {
+    console.log('reloading blacklists')
+    chrome.storage.sync.get(['blockedSites'], (items) => {
+        console.log(items)
         if (items.blockedSites) {
             blacklistedUrls = items.blockedSites.map((n) => {
                 return { hostSuffix: n }
@@ -109,13 +134,34 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
         activeTree.timer = setTimeout(() => {
             console.log('Active tree timer elapsed.')
+
+            let timeFocused = activeTree.grownTime.diff(activeTree.createdTime, 'minutes')
+
             chrome.runtime.sendMessage({
                 action: 'treeGrown',
-                elapsedTime: activeTree.grownTime.diff(activeTree.createdTime, 'minutes')
-            }, function(response) {
+                elapsedTime: timeFocused
+            }, (response) => {
                 console.log('tree grown: ack')
             })
 
+            chrome.notifications.create({
+                iconUrl: 'images/icon-128.png',
+                type: 'basic',
+                title: 'Your tree has grown!',
+                message: 'Your tree has successfully grown. You were focused for ' + timeFocused + ' minutes!'
+            })
+
+            let timeStamp = moment().format('MM/DD/YYYY')
+
+            if (!trees[timeStamp]) {
+                trees[timeStamp] = []
+            }
+
+            trees[timeStamp].push({
+                timeFocused: timeFocused
+            })
+
+            syncTrees()
             treeGone()
         }, treeMins * 60 * 1000)
 
@@ -152,3 +198,4 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 
 reloadBlacklist()
+syncTrees()

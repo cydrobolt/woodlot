@@ -1,12 +1,26 @@
 'use strict'
-/* global angular, chrome */
+/* global angular, chrome, moment */
 
 var woodlot = angular.module('woodlot', [])
 
 woodlot.controller('PopupCtrl', ['$scope', ($scope) => {
     $scope.state = {
         treeActive: false,
-        timeLeft: null
+        timeLeft: null,
+        showWoodlot: false
+    }
+
+    $scope.trees = false
+
+    $scope.syncTrees = () => {
+        chrome.storage.sync.get(['trees'], (items) => {
+            console.log(items)
+            $scope.trees = items.trees
+            if (!items.trees) {
+                $scope.trees = {}
+            }
+        })
+        console.log('trees downloaded from storage')
     }
 
     $scope.treeGone = () => {
@@ -22,7 +36,7 @@ woodlot.controller('PopupCtrl', ['$scope', ($scope) => {
             tree: {
                 minutes: $('.plant-time').val()
             }
-        }, function(response) {
+        }, (response) => {
             console.log('received response for plantTree')
             console.log(response)
         })
@@ -39,17 +53,13 @@ woodlot.controller('PopupCtrl', ['$scope', ($scope) => {
         $scope.treeGone()
     }
 
-    $scope.viewWoodlot = () => {
-
-    }
-
     $scope.init = () => {
         console.log('Loaded PopupCtrl')
 
         // get tree status
         chrome.runtime.sendMessage({
             action: 'getTreeInfo'
-        }, function(response) {
+        }, (response) => {
             let timeLeft = response.timeLeft
             let treeActive = !$.isEmptyObject(response.activeTree)
             $scope.state.treeActive = treeActive
@@ -63,17 +73,13 @@ woodlot.controller('PopupCtrl', ['$scope', ($scope) => {
 
         // listen for updates from background.js
         chrome.runtime.onMessage.addListener(
-            function(request, sender, sendResponse) {
+            (request, sender, sendResponse) => {
                 if (request.action == 'treeGrown') {
-                    let focusedTime = request.elapsedTime
+                    console.log('tree grown!!')
+                    let timeFocused = request.elapsedTime
                     // send a notification to the user
-                    chrome.notifications.create({
-                        iconUrl: 'images/icon-128.png',
-                        type: 'basic',
-                        title: 'Your tree has grown!',
-                        message: 'Your tree has successfully grown. You were focused for ' + focusedTime + ' minutes!'
-                    })
 
+                    $scope.syncTrees()
                     $scope.treeGone()
                 }
 
@@ -89,6 +95,8 @@ woodlot.controller('PopupCtrl', ['$scope', ($scope) => {
                 console.log(sender, request)
             }
         )
+
+        $scope.syncTrees()
     }
 
     $scope.init()
