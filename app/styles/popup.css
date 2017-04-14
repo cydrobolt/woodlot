@@ -33,3 +33,11 @@ input.plant-time {
 .active-tree {
     width: 13em;
 }
+
+.woodlot-view {
+    margin-top: 1em;
+}
+
+.tree {
+    margin-right: 0.1em;
+}

@@ -31,10 +31,16 @@ woodlot.controller('PopupCtrl', ['$scope', ($scope) => {
     }
 
     $scope.plantTree = () => {
+        let treeTime = $('.plant-time').val()
+
+        if (parseInt(treeTime) < 1) {
+            return false
+        }
+
         chrome.runtime.sendMessage({
             action: 'plantTree',
             tree: {
-                minutes: $('.plant-time').val()
+                minutes: treeTime
             }
         }, (response) => {
             console.log('received response for plantTree')

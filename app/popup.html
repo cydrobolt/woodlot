@@ -6,6 +6,7 @@
     <!-- build:css styles/popup-vendor.css -->
     <!-- bower:css -->
     <link rel="stylesheet" href="bower_components/bootstrap-css/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css" />
     <!-- endbower -->
     <!-- endbuild -->
 
@@ -48,7 +49,7 @@
             </div>
 
             <div ng-repeat="(date, dayTrees) in trees" ng-if="trees">
-                <table>
+                <table class="table table-hover">
                     <thead>
                         <tr>
                             <th>Date</th>
@@ -60,12 +61,10 @@
                             <td>{{ date }}</td>
                             <td>
                                 <div ng-repeat="tree in dayTrees">
-                                    <span>
-                                        <p>
-                                            <i class="fa fa-tree tree-1"></i>
-                                        </p>
+                                    <p>
+                                        <i class="fa fa-tree tree"></i>
                                         <span>{{ tree.timeFocused }} minutes</span>
-                                    </span>
+                                    </p>
                                 </div>
                             </td>
                         </tr>
@@ -73,7 +72,7 @@
                 </table>
             </div>
 
-            <div class="row">
+            <div>
                 <a class="btn btn-warning" ng-click="state.showWoodlot = false">back</a>
             </div>
         </div>
